@@ -1,11 +1,9 @@
 package com.piashcse.appscheduler.data.repository
 
-import com.piashcse.appscheduler.data.local.AppDatabase
+import androidx.lifecycle.LiveData
 import com.piashcse.appscheduler.data.local.dao.ScheduleDao
-import com.piashcse.appscheduler.data.local.entity.ExecutionLog
-import com.piashcse.appscheduler.data.local.entity.Schedule
-import com.piashcse.appscheduler.data.scheduler.AlarmScheduler
-import kotlinx.coroutines.flow.Flow
+import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
+import com.piashcse.appscheduler.data.model.ScheduleStatus
 
 class ScheduleRepository(private val scheduleDao: ScheduleDao) {
 
