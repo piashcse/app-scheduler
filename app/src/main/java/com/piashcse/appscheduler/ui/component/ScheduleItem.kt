@@ -1,152 +1,167 @@
 package com.piashcse.appscheduler.ui.component
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
 import com.piashcse.appscheduler.data.model.ScheduleStatus
-import java.text.SimpleDateFormat
-import java.util.*
+import com.piashcse.appscheduler.utils.TimeUtils
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleItem(
+fun ScheduleListItem(
     schedule: ScheduleEntity,
-    onEdit: () -> Unit,
-    onCancel: () -> Unit,
-    onDelete: () -> Unit
+    onEdit: (ScheduleEntity) -> Unit,
+    onCancel: (ScheduleEntity) -> Unit,
+    onDelete: (ScheduleEntity) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()) }
+    val statusColor = when (schedule.status) {
+        ScheduleStatus.PENDING -> MaterialTheme.colorScheme.primary
+        ScheduleStatus.EXECUTED -> Color(0xFF4CAF50)
+        ScheduleStatus.CANCELLED -> Color(0xFF9E9E9E)
+        ScheduleStatus.FAILED -> MaterialTheme.colorScheme.error
+    }
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var showCancelDialog by remember { mutableStateOf(false) }
+    val isOverdue = schedule.status == ScheduleStatus.PENDING &&
+            TimeUtils.isTimeInPast(schedule.scheduledTime)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isOverdue)
+                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
+            else
+                MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = schedule.appName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Scheduled: ${dateFormat.format(Date(schedule.scheduledTime))}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Status: ${schedule.status.name}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = when (schedule.status) {
-                    ScheduleStatus.PENDING -> MaterialTheme.colorScheme.primary
-                    ScheduleStatus.EXECUTED -> MaterialTheme.colorScheme.tertiary
-                    ScheduleStatus.CANCELLED -> MaterialTheme.colorScheme.error
-                    ScheduleStatus.FAILED -> MaterialTheme.colorScheme.error
-                }
-            )
-
-            if (schedule.executedAt != null) {
-                Spacer(modifier = Modifier.height(4.dp))
+            // Header with app name and status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "Executed: ${dateFormat.format(Date(schedule.executedAt))}",
+                    text = schedule.appName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Surface(
+                    color = statusColor,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(
+                        text = schedule.status.name,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Scheduled time with 12-hour format
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Scheduled: ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = TimeUtils.formatDateTime12Hour(schedule.scheduledTime),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            // Time remaining or execution info
+            if (schedule.status == ScheduleStatus.PENDING) {
+                if (isOverdue) {
+                    Text(
+                        text = "⚠️ Overdue",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else {
+                    Text(
+                        text = "⏰ ${TimeUtils.getTimeRemaining(schedule.scheduledTime)} remaining",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else if (schedule.executedAt != null) {
+                Text(
+                    text = "Executed: ${TimeUtils.formatDateTime12Hour(schedule.executedAt)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // Package name
+            Text(
+                text = schedule.packageName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (schedule.status == ScheduleStatus.PENDING) {
-                    OutlinedButton(
-                        onClick = onEdit,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Edit")
-                    }
-
-                    OutlinedButton(
-                        onClick = { showCancelDialog = true },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Cancel")
-                    }
-                }
-
-                OutlinedButton(
-                    onClick = { showDeleteDialog = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+            // Action buttons
+            if (schedule.status == ScheduleStatus.PENDING || schedule.status == ScheduleStatus.FAILED) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("Delete")
+                    // Edit button
+                    IconButton(onClick = { onEdit(schedule) }) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit Schedule",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // Delete button
+                    IconButton(onClick = { onDelete(schedule) }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Schedule",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
-    }
-
-    // Delete Confirmation Dialog
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Schedule") },
-            text = { Text("Are you sure you want to delete this schedule?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDelete()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("Yes")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("No")
-                }
-            }
-        )
-    }
-
-    // Cancel Confirmation Dialog
-    if (showCancelDialog) {
-        AlertDialog(
-            onDismissRequest = { showCancelDialog = false },
-            title = { Text("Cancel Schedule") },
-            text = { Text("Are you sure you want to cancel this schedule?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onCancel()
-                        showCancelDialog = false
-                    }
-                ) {
-                    Text("Yes")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) {
-                    Text("No")
-                }
-            }
-        )
     }
 }

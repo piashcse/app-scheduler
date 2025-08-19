@@ -1,10 +1,9 @@
-package com.piashcse.appscheduler.ui.viewmodel
+package com.piashcse.appscheduler.ui.screen
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import com.piashcse.appscheduler.data.local.AppSchedulerDatabase
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
@@ -16,6 +15,7 @@ import com.piashcse.appscheduler.utils.AppUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 
@@ -42,11 +42,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _editingSchedule = mutableStateOf<ScheduleEntity?>(null)
     val editingSchedule: State<ScheduleEntity?> = _editingSchedule
 
-    // Observer for schedules LiveData
-    private val schedulesObserver = Observer<List<ScheduleEntity>> { scheduleList ->
-        _schedules.value = scheduleList
-    }
-
     init {
         loadInstalledApps()
         loadSchedules()
@@ -64,14 +59,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadSchedules() {
-        // Observe LiveData and convert to StateFlow
-        repository.getAllSchedules().observeForever(schedulesObserver)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        // Remove observer to prevent memory leaks
-        repository.getAllSchedules().removeObserver(schedulesObserver)
+        viewModelScope.launch {
+            repository.getAllSchedules()
+                .catch { exception ->
+                    showMessage("Error loading schedules: ${exception.message}")
+                }
+                .collect { scheduleList ->
+                    _schedules.value = scheduleList
+                }
+        }
     }
 
     fun showScheduleDialog(appInfo: AppInfo? = null, schedule: ScheduleEntity? = null) {
@@ -89,12 +85,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun scheduleApp(appInfo: AppInfo, scheduledTime: Long) {
         viewModelScope.launch {
             try {
-                // Validate scheduled time
-                if (scheduledTime <= System.currentTimeMillis()) {
-                    showMessage("Please select a future time!")
-                    return@launch
-                }
-
                 // Check for time conflicts
                 if (repository.checkTimeConflict(scheduledTime)) {
                     showMessage("Time conflict detected! Please choose a different time.")
@@ -130,12 +120,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun updateSchedule(schedule: ScheduleEntity, newTime: Long) {
         viewModelScope.launch {
             try {
-                // Validate scheduled time
-                if (newTime <= System.currentTimeMillis()) {
-                    showMessage("Please select a future time!")
-                    return@launch
-                }
-
                 // Check for time conflicts excluding current schedule
                 if (repository.checkTimeConflict(newTime, schedule.id)) {
                     showMessage("Time conflict detected! Please choose a different time.")

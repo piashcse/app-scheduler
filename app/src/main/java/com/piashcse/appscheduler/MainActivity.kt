@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.piashcse.appscheduler.ui.screen.AppSchedulerScreen
+import com.piashcse.appscheduler.ui.screen.MainViewModel
 import com.piashcse.appscheduler.ui.theme.AppSchedulerTheme
-import com.piashcse.appscheduler.ui.viewmodel.MainViewModel
 
 class MainActivity : ComponentActivity() {
 

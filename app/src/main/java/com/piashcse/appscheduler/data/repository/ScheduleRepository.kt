@@ -1,15 +1,15 @@
 package com.piashcse.appscheduler.data.repository
 
-import androidx.lifecycle.LiveData
 import com.piashcse.appscheduler.data.local.dao.ScheduleDao
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
 import com.piashcse.appscheduler.data.model.ScheduleStatus
+import kotlinx.coroutines.flow.Flow
 
 class ScheduleRepository(private val scheduleDao: ScheduleDao) {
 
-    fun getAllSchedules(): LiveData<List<ScheduleEntity>> = scheduleDao.getAllSchedules()
+    fun getAllSchedules(): Flow<List<ScheduleEntity>> = scheduleDao.getAllSchedules()
 
-    fun getSchedulesByStatus(status: ScheduleStatus): LiveData<List<ScheduleEntity>> =
+    fun getSchedulesByStatus(status: ScheduleStatus): Flow<List<ScheduleEntity>> =
         scheduleDao.getSchedulesByStatus(status)
 
     suspend fun getScheduleById(id: Long): ScheduleEntity? = scheduleDao.getScheduleById(id)

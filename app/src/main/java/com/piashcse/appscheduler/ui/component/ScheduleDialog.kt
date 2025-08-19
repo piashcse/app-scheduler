@@ -2,24 +2,42 @@ package com.piashcse.appscheduler.ui.component
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
 import com.piashcse.appscheduler.data.model.AppInfo
+import com.piashcse.appscheduler.utils.TimeUtils
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.*
+import java.time.ZoneId
+import java.util.Calendar
+import java.util.Date
 
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleDialog(
     selectedApp: AppInfo?,
@@ -27,56 +45,46 @@ fun ScheduleDialog(
     onSchedule: (AppInfo, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
+    val isEditing = editingSchedule != null
+    val appInfo = selectedApp ?: run {
+        if (isEditing) {
+            AppInfo(
+                packageName = editingSchedule.packageName,
+                appName = editingSchedule.appName
+            )
+        } else {
+            onDismiss()
+            return
+        }
+    }
+
+    // Initialize with current schedule time or current time + 1 minute
+    val initialTime = if (isEditing) {
+        Date(editingSchedule!!.scheduledTime)
+    } else {
+        Calendar.getInstance().apply {
+            add(Calendar.MINUTE, 1)
+        }.time
+    }
 
     var selectedDate by remember {
         mutableStateOf(
-            if (editingSchedule != null) {
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = editingSchedule.scheduledTime
-                LocalDate.of(
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH) + 1,
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                )
-            } else {
-                LocalDate.now()
-            }
+            initialTime.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
         )
     }
 
     var selectedTime by remember {
         mutableStateOf(
-            if (editingSchedule != null) {
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = editingSchedule.scheduledTime
-                LocalTime.of(
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE)
-                )
-            } else {
-                LocalTime.now().plusMinutes(1)
-            }
+            initialTime.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalTime()
         )
     }
 
     val dateDialogState = rememberMaterialDialogState()
     val timeDialogState = rememberMaterialDialogState()
-
-    // Calculate if the selected time is in the future
-    val isValidTime = remember(selectedDate, selectedTime) {
-        val calendar = Calendar.getInstance()
-        calendar.set(
-            selectedDate.year,
-            selectedDate.monthValue - 1,
-            selectedDate.dayOfMonth,
-            selectedTime.hour,
-            selectedTime.minute,
-            0
-        )
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.timeInMillis > System.currentTimeMillis()
-    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -86,100 +94,119 @@ fun ScheduleDialog(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = if (editingSchedule != null) "Edit Schedule" else "Schedule App",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = if (isEditing) "Edit Schedule" else "Schedule App",
+                    style = MaterialTheme.typography.titleLarge
                 )
 
-                val appName = selectedApp?.appName ?: editingSchedule?.appName ?: ""
                 Text(
-                    text = "App: $appName",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = "App: ${appInfo.appName}",
+                    style = MaterialTheme.typography.bodyMedium
                 )
 
-                OutlinedButton(
-                    onClick = { dateDialogState.show() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+
+                // Date selection
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { dateDialogState.show() }
                 ) {
-                    Text("Date: $selectedDate")
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Date",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            text = TimeUtils.formatDate(
+                                selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
 
-                OutlinedButton(
-                    onClick = { timeDialogState.show() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                // Time selection
+                OutlinedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { timeDialogState.show() }
                 ) {
-                    Text("Time: $selectedTime")
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Time",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Text(
+                            text =  TimeUtils.formatTime12Hour(
+                                selectedTime.atDate(selectedDate)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
 
-                if (!isValidTime) {
-                    Text(
-                        text = "Please select a future time",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                // Preview
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
-                } else {
-                    Spacer(modifier = Modifier.height(16.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Scheduled for:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = TimeUtils.formatDateTime12Hour(
+                                selectedDate.atTime(selectedTime)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toInstant()
+                                    .toEpochMilli()
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                 }
 
+                // Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    TextButton(onClick = onDismiss) {
                         Text("Cancel")
                     }
-
+                    Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val calendar = Calendar.getInstance()
-                            calendar.set(
-                                selectedDate.year,
-                                selectedDate.monthValue - 1,
-                                selectedDate.dayOfMonth,
-                                selectedTime.hour,
-                                selectedTime.minute,
-                                0
-                            )
-                            calendar.set(Calendar.MILLISECOND, 0)
-
-                            val scheduledTime = calendar.timeInMillis
-
-                            if (selectedApp != null) {
-                                onSchedule(selectedApp, scheduledTime)
-                            } else if (editingSchedule != null) {
-                                // For editing, we need to pass the app info
-                                val appInfo = AppInfo(
-                                    packageName = editingSchedule.packageName,
-                                    appName = editingSchedule.appName,
-                                    icon = null
-                                )
-                                onSchedule(appInfo, scheduledTime)
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        enabled = (selectedApp != null || editingSchedule != null) && isValidTime
+                            val timestamp = selectedDate.atTime(selectedTime)
+                                .atZone(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli()
+                            onSchedule(appInfo, timestamp)
+                        }
                     ) {
-                        Text(if (editingSchedule != null) "Update" else "Schedule")
+                        Text(if (isEditing) "Update" else "Schedule")
                     }
                 }
             }
         }
     }
 
+    // Date picker dialog
     MaterialDialog(
         dialogState = dateDialogState,
         buttons = {
@@ -189,16 +216,13 @@ fun ScheduleDialog(
     ) {
         datepicker(
             initialDate = selectedDate,
-            title = "Pick a date",
-            allowedDateValidator = { date ->
-                // Only allow today and future dates
-                !date.isBefore(LocalDate.now())
-            }
-        ) { date ->
-            selectedDate = date
+            title = "Pick a date"
+        ) {
+            selectedDate = it
         }
     }
 
+    // Time picker dialog with 12/24 hour format
     MaterialDialog(
         dialogState = timeDialogState,
         buttons = {
@@ -208,9 +232,10 @@ fun ScheduleDialog(
     ) {
         timepicker(
             initialTime = selectedTime,
-            title = "Pick a time"
-        ) { time ->
-            selectedTime = time
+            title = "Pick a time",
+            is24HourClock = false
+        ) {
+            selectedTime = it
         }
     }
 }

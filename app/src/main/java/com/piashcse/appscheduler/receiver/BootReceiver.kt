@@ -8,6 +8,7 @@ import com.piashcse.appscheduler.data.model.ScheduleStatus
 import com.piashcse.appscheduler.utils.AlarmUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class BootReceiver : BroadcastReceiver() {
@@ -18,23 +19,18 @@ class BootReceiver : BroadcastReceiver() {
             val scheduleDao = database.scheduleDao()
 
             CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    // Get pending schedules directly using suspend function
-                    val pendingSchedules = scheduleDao.getSchedulesByStatusSync(ScheduleStatus.PENDING)
-
-                    pendingSchedules.forEach { schedule ->
-                        if (schedule.scheduledTime > System.currentTimeMillis()) {
-                            AlarmUtils.scheduleAlarm(
-                                context,
-                                schedule.id,
-                                schedule.packageName,
-                                schedule.appName,
-                                schedule.scheduledTime
-                            )
-                        }
+                // Use .first() to get single emission from Flow
+                val pendingSchedules = scheduleDao.getSchedulesByStatus(ScheduleStatus.PENDING).first()
+                pendingSchedules.forEach { schedule ->
+                    if (schedule.scheduledTime > System.currentTimeMillis()) {
+                        AlarmUtils.scheduleAlarm(
+                            context,
+                            schedule.id,
+                            schedule.packageName,
+                            schedule.appName,
+                            schedule.scheduledTime
+                        )
                     }
-                } catch (e: Exception) {
-                    // Log error or handle gracefully
                 }
             }
         }

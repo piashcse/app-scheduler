@@ -15,6 +15,7 @@ class AppLaunchReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val scheduleId = intent.getLongExtra("schedule_id", -1)
         val packageName = intent.getStringExtra("package_name") ?: return
+        val appName = intent.getStringExtra("app_name") ?: return
 
         if (scheduleId == -1L) return
 
