@@ -4,8 +4,12 @@ import com.piashcse.appscheduler.data.local.dao.ScheduleDao
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
 import com.piashcse.appscheduler.data.model.ScheduleStatus
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class ScheduleRepository(private val scheduleDao: ScheduleDao) {
+
+class ScheduleRepository @Inject constructor(
+    private val scheduleDao: ScheduleDao,
+) {
 
     fun getAllSchedules(): Flow<List<ScheduleEntity>> = scheduleDao.getAllSchedules()
 
@@ -14,7 +18,8 @@ class ScheduleRepository(private val scheduleDao: ScheduleDao) {
 
     suspend fun getScheduleById(id: Long): ScheduleEntity? = scheduleDao.getScheduleById(id)
 
-    suspend fun insertSchedule(schedule: ScheduleEntity): Long = scheduleDao.insertSchedule(schedule)
+    suspend fun insertSchedule(schedule: ScheduleEntity): Long =
+        scheduleDao.insertSchedule(schedule)
 
     suspend fun updateSchedule(schedule: ScheduleEntity) = scheduleDao.updateSchedule(schedule)
 

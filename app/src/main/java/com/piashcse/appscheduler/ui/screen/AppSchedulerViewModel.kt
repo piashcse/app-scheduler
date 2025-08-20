@@ -5,25 +5,25 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.piashcse.appscheduler.data.local.AppSchedulerDatabase
 import com.piashcse.appscheduler.data.local.entity.ScheduleEntity
 import com.piashcse.appscheduler.data.model.AppInfo
 import com.piashcse.appscheduler.data.model.ScheduleStatus
 import com.piashcse.appscheduler.data.repository.ScheduleRepository
 import com.piashcse.appscheduler.utils.AlarmUtils
 import com.piashcse.appscheduler.utils.AppUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class MainViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val database = AppSchedulerDatabase.getDatabase(application)
-    private val repository = ScheduleRepository(database.scheduleDao())
-
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repository: ScheduleRepository,
+    application: Application
+) : AndroidViewModel(application){
     private val _uiState = MutableStateFlow(AppSchedulerUiState())
     val uiState: StateFlow<AppSchedulerUiState> = _uiState.asStateFlow()
 

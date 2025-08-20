@@ -1,5 +1,7 @@
 package com.piashcse.appscheduler.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,11 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.piashcse.appscheduler.ui.component.ScheduleDialog
 import com.piashcse.appscheduler.ui.component.TabContent
+import androidx.hilt.navigation.compose.hiltViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSchedulerScreen(
-    viewModel: MainViewModel
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val showScheduleDialog by viewModel.showScheduleDialog

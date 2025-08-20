@@ -14,14 +14,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import com.piashcse.appscheduler.ui.screen.AppSchedulerScreen
-import com.piashcse.appscheduler.ui.screen.MainViewModel
 import com.piashcse.appscheduler.ui.theme.AppSchedulerTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    private lateinit var viewModel: MainViewModel
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -33,15 +31,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-
         setContent {
             AppSchedulerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppSchedulerScreen(viewModel = viewModel)
+                    AppSchedulerScreen()
 
                     LaunchedEffect(Unit) {
                         checkPermissions()
