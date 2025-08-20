@@ -69,6 +69,7 @@ dependencies {
     // hilt
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.junit.ktx)
     ksp(libs.hilt.compiler)
 
     // Room database
@@ -92,6 +93,18 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.core.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    testImplementation(libs.room.testing)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
 }
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
