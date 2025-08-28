@@ -8,6 +8,7 @@ Easily schedule any installed app to launch automatically at your desired time.
 - 📊 **Schedule Management** – View, edit, and delete scheduled tasks  
 - 🔄 **Status Tracking** – Monitor pending, executed, cancelled, and failed schedules  
 - 🔔 **Exact Alarms** – Precise scheduling using Android's AlarmManager
+- 🗄 Local Storage - Room database
 
 ## 📱 Screenshots
 <p align="center">
