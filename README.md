@@ -1,6 +1,6 @@
 # App Scheduler 📱⏰
 
-A modern Android app scheduler built with **Jetpack Compose**, **MVVM Clean Architecture**, and the latest Android development practices.  
+A modern Android app scheduler built with **Jetpack Compose**, **MVVM Architecture** and the latest Android development practices.  
 Easily schedule any installed app to launch automatically at your desired time.
 
 ## ✨ Features
@@ -9,6 +9,67 @@ Easily schedule any installed app to launch automatically at your desired time.
 - 🔄 **Status Tracking** – Monitor pending, executed, cancelled, and failed schedules  
 - 🔔 **Exact Alarms** – Precise scheduling using Android's AlarmManager
 
+## 📱 Screenshots
+<p align="center">
+  <img width="35%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot_1755706113.png" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img width="35%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot_1755706109.png" />
+</p>
+<br>
+<p align="center">
+  <img width="35%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot_1755706121.png" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img width="35%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot_1755706116.png" />
+</p>
+<br>
+<p align="center">
+  <img width="80%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot 2025-08-20-at-10.09.57-pm.png" /> </br>
+  <img width="80%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot 2025-08-20-at-10.10.12-pm.png" />
+  <img width="80%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot 2025-08-20-at-10.10.32-pm.png" />
+  <img width="80%" src="https://github.com/piashcse/app-scheduler/blob/main/screenshots/screenshot-2025-08-20-at-10.09.39-pm.png" />
+</p>
+
+## Project Structure 
+
+```
+AppScheduler/
+├── app/
+│   ├── manifests/
+│   │   └── AndroidManifest.xml
+│   ├── kotlin+java/
+│   │   └── com.piashcse.appscheduler/
+│   │       ├── data/
+│   │       │   ├── local/
+│   │       │   ├── model/
+│   │       │   └── repository/
+│   │       ├── di/
+│   │       │   ├── DatabaseModule.kt
+│   │       │   └── RepositoryModule.kt
+│   │       ├── receiver/
+│   │       │   ├── AppLaunchReceiver.kt
+│   │       │   └── BootReceiver.kt
+│   │       ├── ui/
+│   │       │   ├── component/
+│   │       │   ├── screen/
+│   │       │   └── theme/
+│   │       ├── utils/
+│   │       │   ├── AlarmUtils.kt
+│   │       │   ├── AppUtils.kt
+│   │       │   ├── Converters.kt
+│   │       │   └── TimeUtils.kt
+│   │       ├── Application.kt
+│   │       └── MainActivity.kt
+│   │   ├── com.piashcse.appscheduler (androidTest)/
+│   │   └── com.piashcse.appscheduler (test)/
+│   ├── java (generated)/
+│   ├── res/
+│   └── res (generated)/
+├── Gradle Scripts/
+│   ├── build.gradle.kts (Project: App_Scheduler)
+│   ├── build.gradle.kts (Module: app)
+│   ├── proguard-rules.pro (ProGuard Rules for ":app")
+│   ├── gradle.properties (Project Properties)
+│   └── libs.versions.toml (Version Catalog)
+└── README.md
+```
 ## 🖥 Main Interface  
 - **Schedules Tab** – View all your scheduled apps with status badges  
 - **Apps Tab** – Browse and select from installed apps  
