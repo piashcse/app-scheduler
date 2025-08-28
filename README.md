@@ -55,3 +55,18 @@ Easily schedule any installed app to launch automatically at your desired time.
 - **Edit** - Tap edit icon to modify schedule time
 - **Cancel** - Tap delete icon to cancel pending schedules
 - **Retry** - Retry failed schedules (up to 3 attempts)
+
+
+## 👨 Developed By
+
+<a href="https://twitter.com/piashcse" target="_blank">
+  <img src="https://avatars.githubusercontent.com/piashcse" width="80" align="left">
+</a>
+
+**Mehedi Hassan Piash**
+
+[![Twitter](https://img.shields.io/badge/-Twitter-1DA1F2?logo=x&logoColor=white&style=for-the-badge)](https://twitter.com/piashcse)
+[![Medium](https://img.shields.io/badge/-Medium-00AB6C?logo=medium&logoColor=white&style=for-the-badge)](https://medium.com/@piashcse)
+[![Linkedin](https://img.shields.io/badge/-LinkedIn-0077B5?logo=linkedin&logoColor=white&style=for-the-badge)](https://www.linkedin.com/in/piashcse/)
+[![Web](https://img.shields.io/badge/-Web-0073E6?logo=appveyor&logoColor=white&style=for-the-badge)](https://piashcse.github.io/)
+[![Blog](https://img.shields.io/badge/-Blog-0077B5?logo=readme&logoColor=white&style=for-the-badge)](https://piashcse.blogspot.com)
